@@ -10,6 +10,8 @@ namespace MohawkGame2D
     /// </summary>
     public class Game
     {
+        Eyeball[] eyeballs = new Eyeball[500];
+
         /// <summary>
         ///     Setup runs once before the game loop begins.
         /// </summary>
@@ -17,6 +19,15 @@ namespace MohawkGame2D
         {
             Window.SetTitle("Eyeball");
             Window.SetSize(800, 600);
+
+            // Iterate over array, for each element in array, call Setup()
+            for (int i = 0; i < eyeballs.Length; i += 1)
+            {
+                // For each element in array, create a new eyeball
+                eyeballs[i] = new Eyeball();
+                // Set up that eyeball
+                eyeballs[i].Setup();
+            }
         }
 
         /// <summary>
@@ -26,7 +37,10 @@ namespace MohawkGame2D
         {
             Window.ClearBackground(Color.OffWhite);
 
-
+            for (int i = 0; i < eyeballs.Length; i++)
+            {
+                eyeballs[i].Update();
+            }
         }
     }
 
