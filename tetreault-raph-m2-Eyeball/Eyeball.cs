@@ -6,9 +6,9 @@ namespace MohawkGame2D;
 public class Eyeball
 {
     Vector2 position;
+    Vector2 irisOffset;
     Color irisColor;
     float radius;
-    Vector2 irisOffset;
 
     public void Setup()
     {
