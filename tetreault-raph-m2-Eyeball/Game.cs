@@ -10,7 +10,7 @@ namespace MohawkGame2D;
 /// </summary>
 public class Game
 {
-    Eyeball[] eyeballs = new Eyeball[1];
+    Eyeball[] eyeballs = new Eyeball[200];
 
     /// <summary>
     ///     Setup runs once before the game loop begins.
@@ -18,7 +18,7 @@ public class Game
     public void Setup()
     {
         Window.SetTitle("Eyeball");
-        Window.SetSize(800, 600);
+        Window.SetSize(1920, 800);
 
         // Iterate over array, for each element in array, call Setup()
         for (int i = 0; i < eyeballs.Length; i += 1)
@@ -37,8 +37,17 @@ public class Game
     {
         Window.ClearBackground(Color.OffWhite);
 
+        // "PHYSICS"
         for (int i = 0; i < eyeballs.Length; i++)
         {
+            // For each eyeball in array, compare against all other eyeballs
+            eyeballs[i].TryCollideWithOtherEyes(eyeballs);
+        }
+
+        // RENDER
+        for (int i = 0; i < eyeballs.Length; i++)
+        {
+            // Do the regular udate stuff
             eyeballs[i].Update();
         }
     }

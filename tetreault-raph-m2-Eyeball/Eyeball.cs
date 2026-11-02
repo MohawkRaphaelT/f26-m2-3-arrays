@@ -13,6 +13,7 @@ public class Eyeball
     float pupilRadius;
 
     // "Constants"
+    float friction = 0.7f; // keep 70% of energy after bounce 
     Color[] validEyeColors = [
             Color.Red,
             Color.Green,
@@ -30,13 +31,13 @@ public class Eyeball
         int randomColorIndex = Random.Integer(validEyeColors.Length);
         irisColor = validEyeColors[randomColorIndex];
         // Random size for eye
-        corneaRadius = Random.Integer(50, 100 + 1);
+        corneaRadius = Random.Integer(10, 30 + 1);
         // Choose a random proportional size compared to the cornea
         irisRadius = Random.Float(0.5f, 0.7f) * corneaRadius;
         pupilRadius = Random.Float(0.3f, 0.4f) * corneaRadius;
 
         // HACK
-        position = new(Window.Width / 2, corneaRadius);
+        //position = new(Window.Width / 2, corneaRadius);
         //Window.TargetFPS = 5;
     }
 
@@ -51,8 +52,6 @@ public class Eyeball
         position += velocity;
 
         // CONSTRAIN TO SCREEN
-        float friction = 0.7f; // keep 70% of energy after bounce 
-
         bool isCollidingTop    = (position.Y - corneaRadius) < 0;
         bool isCollidingBottom = (position.Y + corneaRadius) > Window.Height;
         bool isCollidingLeft   = (position.X - corneaRadius) < 0;
@@ -62,7 +61,7 @@ public class Eyeball
         // BOTTOM
         if (isCollidingBottom == true)
         {
-            // Reposition to be touching edge of bottom
+            // Reposition to be touching bottom edge
             position.Y = Window.Height - corneaRadius;
             // Invert velocity on Y axis
             velocity.Y = -velocity.Y;
@@ -95,13 +94,17 @@ public class Eyeball
             velocity *= friction;
         }
 
-
-        AddRandomVelocity();
+        // For funsies
+        // If we press the mouse button...
+        if (Input.IsMouseButtonPressed(MouseButton.Left) == true)
+        {
+            velocity += Random.Direction() * 50;
+        }
 
         // EYE LOOK AT MOUSE
         // Calculate where the iris should be.
         // We want it to point towards the mouse cursor.
-        
+
         // Get the vector from eye (point a), to mouse (point b), b - a
         Vector2 eyeToMouse = Input.GetMousePosition() - position;
         // Get the direction to the mouse from the eye's position
@@ -141,12 +144,47 @@ public class Eyeball
         Draw.Circle(position + irisCentre, pupilRadius);
     }
 
-    public void AddRandomVelocity()
+    public void TryCollideWithOtherEyes(Eyeball[] eyeballs)
     {
-        // If we press the mouse button...
-        if (Input.IsMouseButtonPressed(MouseButton.Left) == true)
+        // if colliding
+        //      change velocity
+
+        foreach (Eyeball other in eyeballs)
         {
-            velocity += Random.Direction() * 50;
+            // Do not try to collide this eyeball with itself
+            if (this == other)
+                continue; // skip this element of the array
+
+            // Minimum distance to not be colliding
+            float sumRadii = this.corneaRadius + other.corneaRadius;
+            // 
+            Vector2 fromThisToOther = other.position - this.position;
+            Vector2 direction = Vector2.Normalize(fromThisToOther);
+            float distance = fromThisToOther.Length();
+
+            // Do circle-circle collision check
+            bool doOverlap = distance < sumRadii;
+            if (doOverlap == true)
+            {
+                // Move so they are not overlapping
+                float halfDistance = (sumRadii - distance) / 2;
+                Vector2 displacement = direction * halfDistance;
+                // Move other away from this
+                other.position += displacement;
+                // Move this away from toher in opposite direction
+                this.position -= displacement;
+
+                // Simple proportions
+                float volumeThis = MathF.PI * this.corneaRadius * this.corneaRadius;
+                float volumeOther = MathF.PI * other.corneaRadius * other.corneaRadius;
+                float sumVolume = volumeThis + volumeOther;
+                float frictionThis = 1f - (volumeThis / sumVolume * (1 - friction));
+                float frictionOther = 1f - (volumeOther / sumVolume * (1 - friction));
+
+                // change velocity
+                this.velocity  =  this.velocity.Length() * -direction * frictionThis;
+                other.velocity = other.velocity.Length() * +direction * frictionOther;
+            }
         }
     }
 }
