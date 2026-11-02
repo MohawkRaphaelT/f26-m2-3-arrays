@@ -10,7 +10,7 @@ namespace MohawkGame2D;
 /// </summary>
 public class Game
 {
-    Eyeball[] eyeballs = new Eyeball[10];
+    Eyeball[] eyeballs = new Eyeball[1];
 
     /// <summary>
     ///     Setup runs once before the game loop begins.
